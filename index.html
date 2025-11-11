@@ -476,7 +476,7 @@
     <script>
         // ===== CONFIGURATION =====
         const CONFIG = {
-            apiKey: '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',
+            apiKey: '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',
             model: 'gpt-4o',
             similarityThreshold: 0.3, // Lowered to align more words
             dutchSentences: [
@@ -584,18 +584,14 @@
 
         // ===== SPLIT TEXT INTO SENTENCES =====
         function splitIntoSentences(text) {
-            // Split on sentence boundaries (.!?) followed by space or end of string
-            return text
-                .split(/([.!?]+\s+|[.!?]+$)/)
-                .reduce((acc, part, i, arr) => {
-                    if (i % 2 === 0 && part.trim()) {
-                        // Combine sentence with its punctuation
-                        const sentence = part + (arr[i + 1] || '');
-                        acc.push(sentence.trim());
-                    }
-                    return acc;
-                }, [])
-                .filter(s => s.length > 0);
+            // Simple split on sentence-ending punctuation followed by whitespace or end of line
+            const sentences = text
+                .trim()
+                .split(/(?<=[.!?])\s+/)
+                .filter(s => s.trim().length > 0);
+            
+            // If no splits happened, return the whole text as one sentence
+            return sentences.length > 0 ? sentences : [text.trim()];
         }
 
         // ===== ALIGNMENT ALGORITHM =====
