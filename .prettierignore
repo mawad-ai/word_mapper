@@ -1,0 +1,7 @@
+node_modules
+.next
+dist
+build
+.wrangler
+*.lock
+package-lock.json

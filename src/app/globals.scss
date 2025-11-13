@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 217 91% 60%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 217.2 32.6% 17.5%;
+    --card-foreground: 210 40% 98%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
+  }
+}
+
+@layer components {
+  .token {
+    @apply px-4 py-2 bg-muted border-2 border-border rounded-md text-sm 
+           cursor-pointer transition-all duration-200 relative hover:-translate-y-0.5 
+           hover:shadow-lg;
+
+    &.highlight {
+      @apply shadow-[0_0_12px_currentColor];
+    }
+  }
+
+  .token-lane {
+    @apply flex flex-wrap gap-3 p-4 bg-secondary rounded-md mb-20 min-h-[60px];
+
+    &:last-of-type {
+      @apply mb-4;
+    }
+  }
+
+  .alignment-container {
+    @apply relative mt-6 min-h-[300px] overflow-visible;
+  }
+
+  .svg-overlay {
+    @apply absolute top-0 left-0 w-full h-full pointer-events-none z-10;
+  }
+
+  .log-area {
+    @apply bg-secondary border border-border rounded-md p-4 max-h-[200px] 
+           overflow-y-auto font-mono text-sm;
+
+    &:not(.visible) {
+      @apply hidden;
+    }
+  }
+
+  .log-entry {
+    @apply mb-1 text-muted-foreground;
+
+    &.error {
+      @apply text-red-500;
+    }
+
+    &.success {
+      @apply text-green-500;
+    }
+  }
+
+  .log-timestamp {
+    @apply text-purple-500;
+  }
+}
+
+::-webkit-scrollbar {
+  @apply w-2 h-2;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-secondary;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-border rounded;
+
+  &:hover {
+    @apply bg-muted;
+  }
+}

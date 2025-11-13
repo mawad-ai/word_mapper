@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import '@/app/globals.css';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 interface Alignment {
   source: string;
@@ -40,11 +40,22 @@ export default function Home() {
   const [targetText, setTargetText] = useState('');
   const [sourceLang, setSourceLang] = useState('Dutch');
   const [targetLang, setTargetLang] = useState('English');
-  const [logs, setLogs] = useState<Array<{ message: string; type: string; timestamp: string }>>([]);
+  const [logs, setLogs] = useState<
+    Array<{ message: string; type: string; timestamp: string }>
+  >([]);
   const [logVisible, setLogVisible] = useState(true);
-  const [visualizations, setVisualizations] = useState<Array<{ id: string; sourceTokens: string[]; targetTokens: string[]; alignments: VisualAlignment[] }>>([]);
-  
-  const visualizationRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const [visualizations, setVisualizations] = useState<
+    Array<{
+      id: string;
+      sourceTokens: string[];
+      targetTokens: string[];
+      alignments: VisualAlignment[];
+    }>
+  >([]);
+
+  const visualizationRefs = useRef<{ [key: string]: HTMLDivElement | null }>(
+    {}
+  );
 
   const log = (message: string, type = 'info') => {
     const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
@@ -67,7 +78,11 @@ export default function Home() {
     return sentences.length > 0 ? sentences : [text.trim()];
   };
 
-  const findNextPhraseIndex = (tokens: string[], phrase: string[], usedIndices: Set<number>): number => {
+  const findNextPhraseIndex = (
+    tokens: string[],
+    phrase: string[],
+    usedIndices: Set<number>
+  ): number => {
     for (let i = 0; i <= tokens.length - phrase.length; i++) {
       let positionUsed = false;
       for (let k = 0; k < phrase.length; k++) {
@@ -94,7 +109,11 @@ export default function Home() {
     llmAlignments: Alignment[],
     sourceText: string,
     targetText: string
-  ): { sourceTokens: string[]; targetTokens: string[]; alignments: VisualAlignment[] } => {
+  ): {
+    sourceTokens: string[];
+    targetTokens: string[];
+    alignments: VisualAlignment[];
+  } => {
     const sourceTokens = tokenize(sourceText);
     const targetTokens = tokenize(targetText);
     const visualAlignments: VisualAlignment[] = [];
@@ -105,8 +124,16 @@ export default function Home() {
       const sourcePhrase = tokenize(alignment.source);
       const targetPhrase = tokenize(alignment.target);
 
-      const srcStartIdx = findNextPhraseIndex(sourceTokens, sourcePhrase, usedSourceIndices);
-      const tgtStartIdx = findNextPhraseIndex(targetTokens, targetPhrase, usedTargetIndices);
+      const srcStartIdx = findNextPhraseIndex(
+        sourceTokens,
+        sourcePhrase,
+        usedSourceIndices
+      );
+      const tgtStartIdx = findNextPhraseIndex(
+        targetTokens,
+        targetPhrase,
+        usedTargetIndices
+      );
 
       if (srcStartIdx !== -1 && tgtStartIdx !== -1) {
         for (let i = 0; i < sourcePhrase.length; i++) {
@@ -164,16 +191,24 @@ export default function Home() {
     const content = data.choices[0].message.content.trim();
     let cleanContent = content;
     if (content.includes('```')) {
-      cleanContent = content.replace(/```json\n?/gi, '').replace(/```\n?/g, '').trim();
+      cleanContent = content
+        .replace(/```json\n?/gi, '')
+        .replace(/```\n?/g, '')
+        .trim();
     }
 
     const result = JSON.parse(cleanContent);
 
     if (result.translation && result.alignments) {
-      log(`✅ Successfully parsed JSON with ${result.alignments.length} alignments`, 'success');
+      log(
+        `✅ Successfully parsed JSON with ${result.alignments.length} alignments`,
+        'success'
+      );
       return result;
     } else {
-      throw new Error('Invalid JSON structure - missing translation or alignments');
+      throw new Error(
+        'Invalid JSON structure - missing translation or alignments'
+      );
     }
   };
 
@@ -191,24 +226,37 @@ export default function Home() {
     setTargetText('');
 
     const allTranslations: string[] = [];
-    const newVisualizations: Array<{ id: string; sourceTokens: string[]; targetTokens: string[]; alignments: VisualAlignment[] }> = [];
+    const newVisualizations: Array<{
+      id: string;
+      sourceTokens: string[];
+      targetTokens: string[];
+      alignments: VisualAlignment[];
+    }> = [];
 
     try {
       for (let i = 0; i < sentences.length; i++) {
         const sentence = sentences[i];
-        log(`\n📍 Processing sentence ${i + 1}/${sentences.length}: "${sentence}"`);
+        log(
+          `\n📍 Processing sentence ${i + 1}/${sentences.length}: "${sentence}"`
+        );
 
         const result = await translateText(sentence, sourceLang, targetLang);
 
         if (!result.translation || !result.alignments) {
-          throw new Error(`LLM did not return proper format for sentence ${i + 1}.`);
+          throw new Error(
+            `LLM did not return proper format for sentence ${i + 1}.`
+          );
         }
 
         const translation = result.translation;
         allTranslations.push(translation);
 
-        const converted = convertLLMAlignments(result.alignments, sentence, translation);
-        
+        const converted = convertLLMAlignments(
+          result.alignments,
+          sentence,
+          translation
+        );
+
         newVisualizations.push({
           id: `alignment-container-${i}`,
           sourceTokens: converted.sourceTokens,
@@ -219,7 +267,10 @@ export default function Home() {
 
       setTargetText(allTranslations.join(' '));
       setVisualizations(newVisualizations);
-      log(`\n✅ All ${sentences.length} sentence(s) processed successfully!`, 'success');
+      log(
+        `\n✅ All ${sentences.length} sentence(s) processed successfully!`,
+        'success'
+      );
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       setTargetText(`Error: ${message}`);
@@ -237,7 +288,7 @@ export default function Home() {
 
   useEffect(() => {
     setMounted(true);
-    
+
     const params = new URLSearchParams(window.location.search);
     const text = params.get('text');
     const from = params.get('from');
@@ -248,7 +299,10 @@ export default function Home() {
       if (from) setSourceLang(from);
       if (to) setTargetLang(to);
     } else {
-      const randomSentence = CONFIG.dutchSentences[Math.floor(Math.random() * CONFIG.dutchSentences.length)];
+      const randomSentence =
+        CONFIG.dutchSentences[
+          Math.floor(Math.random() * CONFIG.dutchSentences.length)
+        ];
       setSourceText(randomSentence);
     }
 
@@ -261,7 +315,12 @@ export default function Home() {
     visualizations.forEach((viz) => {
       const container = visualizationRefs.current[viz.id];
       if (container) {
-        visualizeAlignment(viz.sourceTokens, viz.targetTokens, viz.alignments, container);
+        visualizeAlignment(
+          viz.sourceTokens,
+          viz.targetTokens,
+          viz.alignments,
+          container
+        );
       }
     });
   }, [visualizations]);
@@ -334,8 +393,12 @@ export default function Home() {
         const srcIndices = [...new Set(group.map((a) => a.source))];
         const tgtIndices = [...new Set(group.map((a) => a.target))];
 
-        const srcElements = srcIndices.map((i) => sourceElements[i]).filter((el) => el);
-        const tgtElements = tgtIndices.map((i) => targetElements[i]).filter((el) => el);
+        const srcElements = srcIndices
+          .map((i) => sourceElements[i])
+          .filter((el) => el);
+        const tgtElements = tgtIndices
+          .map((i) => targetElements[i])
+          .filter((el) => el);
 
         if (srcElements.length === 0 || tgtElements.length === 0) return;
 
@@ -348,16 +411,24 @@ export default function Home() {
         const srcRect = srcEl.getBoundingClientRect();
         const tgtRect = tgtEl.getBoundingClientRect();
 
-        const x1 = (srcRect.left + srcRect.width / 2 - containerRect.left) * scale;
+        const x1 =
+          (srcRect.left + srcRect.width / 2 - containerRect.left) * scale;
         const y1 = (srcRect.bottom - containerRect.top) * scale;
-        const x2 = (tgtRect.left + tgtRect.width / 2 - containerRect.left) * scale;
+        const x2 =
+          (tgtRect.left + tgtRect.width / 2 - containerRect.left) * scale;
         const y2 = (tgtRect.top - containerRect.top) * scale;
 
         const distance = Math.abs(y2 - y1);
         const controlOffset = distance * 0.5;
 
-        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', `M ${x1} ${y1} C ${x1} ${y1 + controlOffset}, ${x2} ${y2 - controlOffset}, ${x2} ${y2}`);
+        const path = document.createElementNS(
+          'http://www.w3.org/2000/svg',
+          'path'
+        );
+        path.setAttribute(
+          'd',
+          `M ${x1} ${y1} C ${x1} ${y1 + controlOffset}, ${x2} ${y2 - controlOffset}, ${x2} ${y2}`
+        );
         path.setAttribute('stroke', color);
         path.setAttribute('stroke-width', String(2.5 * scale));
         path.setAttribute('fill', 'none');
@@ -394,44 +465,62 @@ export default function Home() {
 
   if (!mounted) {
     return (
-      <div>
-        <h1>🔗 Word Mapper</h1>
-        <div className="container">
-          <div style={{ padding: '2rem', textAlign: 'center' }}>Loading...</div>
-        </div>
+      <div className="min-h-screen flex flex-col">
+        <main className="flex-1 max-w-7xl mx-auto w-full p-6">
+          <h1 className="text-4xl font-bold text-center mb-8 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+            🔗 Word Mapper
+          </h1>
+          <div className="text-center py-8">Loading...</div>
+        </main>
       </div>
     );
   }
 
   return (
-    <div>
-      <h1>🔗 Word Mapper</h1>
-
-      <div className="container">
-        <div className="visualization-section">
-          <div className="card">
-            <div style={{ display: 'flex', gap: 'var(--padding-md)', alignItems: 'flex-end' }}>
-              <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
-                <label htmlFor="sourceText">Source Text</label>
+    <div className="min-h-screen flex flex-col">
+      <main className="flex-1 max-w-7xl mx-auto w-full p-6">
+        <h1 className="text-4xl font-bold text-center mb-8 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+          🔗 Word Mapper
+        </h1>
+        <div className="mb-6">
+          <div className="bg-card rounded-lg border border-border p-6">
+            <div className="flex gap-4 items-end">
+              <div className="flex-1">
+                <label
+                  htmlFor="sourceText"
+                  className="block text-sm font-medium mb-2 text-muted-foreground"
+                >
+                  Source Text
+                </label>
                 <textarea
                   id="sourceText"
                   placeholder="Enter text to translate..."
                   value={sourceText}
                   onChange={(e) => setSourceText(e.target.value)}
-                  style={{ minHeight: '80px' }}
+                  className="w-full min-h-[80px] bg-secondary border border-input rounded-md p-3 text-foreground resize-vertical focus:outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>
-              <div className="button-group" style={{ marginBottom: 0, minWidth: '300px' }}>
-                <button onClick={translateAndAlign}>🚀 Translate & Align</button>
+              <div className="min-w-[300px]">
+                <button
+                  onClick={translateAndAlign}
+                  className="w-full px-6 py-2.5 bg-primary text-primary-foreground rounded-md font-medium hover:opacity-90 transition-opacity"
+                >
+                  🚀 Translate & Align
+                </button>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="visualization-section">
+        <div className="mb-6">
           {visualizations.map((viz, i) => (
-            <div key={viz.id} className="card" style={{ marginBottom: 'var(--padding-lg)' }}>
-              <h2>Sentence {i + 1}</h2>
+            <div
+              key={viz.id}
+              className="bg-card rounded-lg border border-border p-6 mb-6"
+            >
+              <h2 className="text-2xl font-semibold mb-4 text-primary">
+                Sentence {i + 1}
+              </h2>
               <div
                 className="alignment-container"
                 ref={(el) => {
@@ -445,13 +534,25 @@ export default function Home() {
           ))}
         </div>
 
-        <div className="controls-section">
-          <div className="card">
-            <h2>Settings</h2>
-            <div className="language-row">
-              <div className="form-group">
-                <label htmlFor="sourceLang">Source Language</label>
-                <select id="sourceLang" value={sourceLang} onChange={(e) => setSourceLang(e.target.value)}>
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="bg-card rounded-lg border border-border p-6">
+            <h2 className="text-2xl font-semibold mb-4 text-primary">
+              Settings
+            </h2>
+            <div className="grid grid-cols-[1fr_auto_1fr] gap-4 items-end">
+              <div>
+                <label
+                  htmlFor="sourceLang"
+                  className="block text-sm font-medium mb-2 text-muted-foreground"
+                >
+                  Source Language
+                </label>
+                <select
+                  id="sourceLang"
+                  value={sourceLang}
+                  onChange={(e) => setSourceLang(e.target.value)}
+                  className="w-full bg-secondary border border-input rounded-md p-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                >
                   <option value="Dutch">Dutch</option>
                   <option value="English">English</option>
                   <option value="French">French</option>
@@ -459,12 +560,25 @@ export default function Home() {
                   <option value="Spanish">Spanish</option>
                 </select>
               </div>
-              <button className="secondary" onClick={swapLanguages} style={{ flex: 0, padding: '10px 16px' }}>
+              <button
+                onClick={swapLanguages}
+                className="px-4 py-2 bg-secondary border border-border rounded-md hover:bg-accent transition-colors"
+              >
                 ⇄
               </button>
-              <div className="form-group">
-                <label htmlFor="targetLang">Target Language</label>
-                <select id="targetLang" value={targetLang} onChange={(e) => setTargetLang(e.target.value)}>
+              <div>
+                <label
+                  htmlFor="targetLang"
+                  className="block text-sm font-medium mb-2 text-muted-foreground"
+                >
+                  Target Language
+                </label>
+                <select
+                  id="targetLang"
+                  value={targetLang}
+                  onChange={(e) => setTargetLang(e.target.value)}
+                  className="w-full bg-secondary border border-input rounded-md p-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                >
                   <option value="Dutch">Dutch</option>
                   <option value="English">English</option>
                   <option value="French">French</option>
@@ -475,35 +589,64 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="card">
-            <h2>Translation Result</h2>
-            <div className="form-group">
-              <label htmlFor="targetText">Translated Text</label>
+          <div className="bg-card rounded-lg border border-border p-6">
+            <h2 className="text-2xl font-semibold mb-4 text-primary">
+              Translation Result
+            </h2>
+            <div className="mb-4">
+              <label
+                htmlFor="targetText"
+                className="block text-sm font-medium mb-2 text-muted-foreground"
+              >
+                Translated Text
+              </label>
               <textarea
                 id="targetText"
                 placeholder="Translation will appear here..."
                 value={targetText}
                 readOnly
-                style={{ minHeight: '150px' }}
+                className="w-full min-h-[150px] bg-secondary border border-input rounded-md p-3 text-foreground resize-vertical focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
 
-            <div className="log-container">
-              <div className="log-header" onClick={() => setLogVisible(!logVisible)}>
-                <label style={{ margin: 0, cursor: 'pointer' }}>Activity Log</label>
-                <span className="log-toggle">{logVisible ? '▼ Hide' : '▶ Show'}</span>
+            <div>
+              <div
+                className="flex justify-between items-center cursor-pointer p-2 bg-secondary border border-border rounded-md mb-1 hover:bg-accent transition-colors"
+                onClick={() => setLogVisible(!logVisible)}
+              >
+                <label className="cursor-pointer text-sm font-medium text-muted-foreground">
+                  Activity Log
+                </label>
+                <span className="text-sm text-muted-foreground select-none">
+                  {logVisible ? '▼ Hide' : '▶ Show'}
+                </span>
               </div>
               <div className={`log-area ${logVisible ? 'visible' : ''}`}>
                 {logs.map((log, i) => (
                   <div key={i} className={`log-entry ${log.type}`}>
-                    <span className="log-timestamp">[{log.timestamp}]</span> {log.message}
+                    <span className="log-timestamp">[{log.timestamp}]</span>{' '}
+                    {log.message}
                   </div>
                 ))}
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </main>
+
+      <footer className="border-t border-border mt-auto">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              Built with Next.js • Translation powered by OpenAI
+            </p>
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-muted-foreground">Theme</span>
+              <ThemeToggle />
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
