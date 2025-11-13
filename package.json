@@ -1,0 +1,26 @@
+{
+  "name": "word-mapper",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "lsof -ti:3000 | xargs kill -9 2>/dev/null || true && next dev",
+    "build": "next build",
+    "build:cf": "npm run build && npx @opennextjs/cloudflare build",
+    "start": "next start",
+    "preview": "npm run build:cf && npx wrangler dev --port 3000",
+    "deploy": "npm run build:cf && npx wrangler deploy"
+  },
+  "dependencies": {
+    "next": "^15.5.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@opennextjs/cloudflare": "^1.12.0",
+    "@types/node": "^22.10.1",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "typescript": "^5.7.2",
+    "wrangler": "^4.47.0"
+  }
+}
