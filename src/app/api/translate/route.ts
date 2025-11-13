@@ -15,7 +15,10 @@ export async function POST(request: NextRequest) {
     // Validate request
     if (!sourceText || !sourceLang || !targetLang) {
       return NextResponse.json(
-        { error: 'Missing required fields: sourceText, sourceLang, or targetLang' },
+        {
+          error:
+            'Missing required fields: sourceText, sourceLang, or targetLang',
+        },
         { status: 400 }
       );
     }
@@ -24,7 +27,10 @@ export async function POST(request: NextRequest) {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
-        { error: 'Server not configured: OPENAI_API_KEY missing in environment variables' },
+        {
+          error:
+            'Server not configured: OPENAI_API_KEY missing in environment variables',
+        },
         { status: 500 }
       );
     }
@@ -100,7 +106,7 @@ Note: Both "maakt" and "schoon" map to "cleans" because they form the separable 
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         model: model || 'gpt-4o',
@@ -127,7 +133,8 @@ Note: Both "maakt" and "schoon" map to "cleans" because they form the separable 
     return NextResponse.json(data);
   } catch (error: unknown) {
     console.error('Server error:', error);
-    const message = error instanceof Error ? error.message : 'Internal server error';
+    const message =
+      error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
