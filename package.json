@@ -6,7 +6,6 @@
     "dev": "lsof -ti:3000 | xargs kill -9 2>/dev/null || true && next dev",
     "build": "next build",
     "build:cf": "npm run build && npx @opennextjs/cloudflare build",
-    "start": "next start",
     "preview": "npm run build:cf && npx wrangler dev --port 3000",
     "deploy": "npm run build:cf && npx wrangler deploy"
   },
