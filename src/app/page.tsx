@@ -56,6 +56,7 @@ export default function Home() {
   const visualizationRefs = useRef<{ [key: string]: HTMLDivElement | null }>(
     {}
   );
+  const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const log = (message: string, type = 'info') => {
     const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
@@ -325,6 +326,35 @@ export default function Home() {
     });
   }, [visualizations]);
 
+  useEffect(() => {
+    const handleResize = () => {
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
+      }
+      resizeTimeoutRef.current = setTimeout(() => {
+        visualizations.forEach((viz) => {
+          const container = visualizationRefs.current[viz.id];
+          if (container) {
+            visualizeAlignment(
+              viz.sourceTokens,
+              viz.targetTokens,
+              viz.alignments,
+              container
+            );
+          }
+        });
+      }, 150);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
+      }
+    };
+  }, [visualizations]);
+
   const visualizeAlignment = (
     sourceTokens: string[],
     targetTokens: string[],
@@ -466,7 +496,7 @@ export default function Home() {
   if (!mounted) {
     return (
       <div className="min-h-screen flex flex-col">
-        <main className="flex-1 max-w-7xl mx-auto w-full p-6">
+        <main className="flex-1 w-full px-6 py-6">
           <h1 className="text-4xl font-bold text-center mb-8 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
             🔗 Word Mapper
           </h1>
@@ -478,7 +508,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <main className="flex-1 max-w-7xl mx-auto w-full p-6">
+      <main className="flex-1 w-full px-6 py-6">
         <h1 className="text-4xl font-bold text-center mb-8 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
           🔗 Word Mapper
         </h1>
@@ -635,7 +665,7 @@ export default function Home() {
       </main>
 
       <footer className="border-t border-border mt-auto">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="w-full px-6 py-4">
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
               Built with Next.js • Translation powered by OpenAI
